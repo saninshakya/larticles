@@ -20,7 +20,7 @@ Route::get('/', function () {
 Route::get('articles', 'ArticleController@index');
 
 //List Single Article
-Route::get('articles/{id}', 'ArticleController@show');
+Route::get('article/{id}', 'ArticleController@show');
 
 //Create new article
 Route::post('article', 'ArticleController@store');
@@ -29,4 +29,4 @@ Route::post('article', 'ArticleController@store');
 Route::put('article', 'ArticleController@store');
 
 //Delete article
-Route::delete('article', 'ArticleController@destroy');
+Route::delete('/article/{id}', 'ArticleController@destroy');
