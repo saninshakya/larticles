@@ -17,10 +17,16 @@ class ArticleController extends Controller
     public function index()
     {
         //Get articles
-        $articles = Article::all();
+        $articles = Article::select('id','title','body', 'created_at')
+                            ->orderBy('id', 'desc')
+                            ->get();
+        // return data
+        return view('articles.index')->with('articles', json_decode($articles));
+    }
 
-        //Return collection of articles as a resource
-        return ArticleResource::collection($articles);
+    public function create() 
+    {
+        return view('articles.create');
     }
 
     /**
@@ -31,14 +37,17 @@ class ArticleController extends Controller
      */
     public function store(Request $request)
     {
-        //
-        $article = $request->isMethod('put') ? Article:: findOfFail($request->article_id) : new Article;
-        $article->id = $request->input('article_id');
-        $article->title = $request->input('title');
-        $article->body = $request->input('body');
+        $this->validate($request, [
+            'title' => 'required',
+            'body' => 'required'
+        ]);
 
-        if($article->save())
-            return new ArticleResource($article);
+        //create articles
+        $article = new Article;
+        $article->title  = $request->input('title');
+        $article->body = $request->input('body');
+        if ($article->save())
+            return redirect('/articles')->with('success', 'Article Created');
     }
 
     /**
@@ -51,9 +60,28 @@ class ArticleController extends Controller
     {
         //Get single article
         $article = Article::findOrFail($id);
+        return view('articles.show')->with('article', json_decode($article));
+    }
 
-        //Return collection of articles as a resource
-        return new ArticleResource($article);
+    public function edit($id)
+    {
+        $article = Article::findOrFail($id);
+        return view('articles.edit')->with('article', $article);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $this->validate($request, [
+            'title' => 'required',
+            'body' => 'required'
+        ]);
+
+        //update articles
+        $article = Article::find($id);
+        $article->title  = $request->input('title');
+        $article->body = $request->input('body');
+        if ($article->save())
+            return redirect('/articles')->with('success', 'Article updated');
     }
 
     /**
@@ -62,8 +90,11 @@ class ArticleController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id, Request $request)
+    public function destroy($id)
     {
-        dd($id);
+        $article = Article::find($id);
+        $article->delete();
+        return redirect('/articles')->with('success', 'Article removed');
+
     }
 }
